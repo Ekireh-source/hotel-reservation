@@ -13,8 +13,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
-const dburi = "mongodb://localhost:27017"
-const dbName = "hotel-reservation"
+
 const userColl = "users"
 
 
@@ -42,20 +41,21 @@ func main() {
 	flag.Parse()
 
 	client, err := mongo.Connect(context.TODO(), options.Client().
-		ApplyURI(dburi))
+		ApplyURI(db.DBURI))
 	if err != nil {
 		log.Fatal(err)
 	}
 
 
 	//handlers initialization
-	userHandler := api.NewUserHandler(db.NewMongoUserStore(client))
+	userHandler := api.NewUserHandler(db.NewMongoUserStore(client, db.DBName))
 
 
 	app := fiber.New(config)
 	apiv1 := app.Group("/api/v1")
 
-
+	apiv1.Put("/user/:id", userHandler.HandlePutUser)
+	apiv1.Delete("/user/:id", userHandler.HandleDeleteUser)
 	apiv1.Post("/user", userHandler.HandlePostUser)
 	apiv1.Get("/user", userHandler.HandleGetUsers)
 	apiv1.Get("/user/:id", userHandler.HandleGetUser)
